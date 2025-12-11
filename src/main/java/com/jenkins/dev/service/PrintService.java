@@ -12,4 +12,7 @@ import org.springframework.stereotype.Service;
        public String sayHello(){
            return "Say Hello ";
        }
+   public String Hello(){
+     return "hey Hello";
+   }
 }

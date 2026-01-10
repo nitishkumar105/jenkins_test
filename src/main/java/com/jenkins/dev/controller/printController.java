@@ -1,24 +1,23 @@
 package com.jenkins.dev.controller;
-
-import org.springframework.http.RequestEntity;
+import com.jenkins.dev.dto.PrintResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import com.jenkins.dev.service.PrintService;
-
 
 @RestController
 @RequestMapping("/api/print")
 public class printController {
 
-        PrintService printService;
-        printController(PrintService printService){
+     private final   PrintService printService;
+      public   printController(PrintService printService){
              this.printService=printService;
         }
         @GetMapping
-      public ResponseEntity<String> printStat(){
-            String s= printService.sayHello();
-            return ResponseEntity.ok(s);
+      public ResponseEntity<PrintResponse> printAbout(){
+
+         //  PrintResponse printRespone=printService.printAbout();
+
+           return ResponseEntity.ok(printService.printAbout());
          }
 
 }

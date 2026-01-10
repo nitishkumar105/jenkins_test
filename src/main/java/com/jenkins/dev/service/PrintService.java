@@ -1,18 +1,14 @@
 package com.jenkins.dev.service;
 
+import com.jenkins.dev.dto.PrintResponse;
 import org.springframework.stereotype.Service;
 
 
 @Service
  public class PrintService {
 
-      public String print(){
-           return "Hello JII";
-      }
-       public String sayHello(){
-           return "Say Hello ";
+       public PrintResponse printAbout(){
+           return new PrintResponse("nitish","nitishkumaryadav105@gmail.com");
        }
-   public String Hello(){
-     return "hey Hello";
-   }
+
 }

@@ -1,11 +1,28 @@
-FROM eclipse-temurin:21-jre
+# Build stage - using Maven image with JDK for building
+FROM maven:3.9.6-eclipse-temurin-21 AS build
+
+WORKDIR /build
+
+# Copy Maven configuration files first (for better layer caching)
+COPY pom.xml .
+COPY src ./src
+# Build the application
+RUN mvn clean package -DskipTests
+
+# Runtime stage - using minimal JRE image
+FROM eclipse-temurin:21-jre-alpine AS runtime
+
+# Add non-root user for better security
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
 
 WORKDIR /app
 
-COPY target/dev-0.0.1-SNAPSHOT.jar app.jar
+# Copy the built JAR from the build stage
+COPY --from=build /build/target/*.jar app.jar
 
-# EXPOSE 9090 // for conatiner springboot-app 
-EXPOSE 8080 
+# Expose port (use the same port as in application.properties)
+EXPOSE 8080
 
-# ENTRYPOINT ["java","-jar","/app/app.jar","--server.port=9090","--server.address=0.0.0.0"]
-ENTRYPOINT ["java","-jar","/app/app.jar","--server.port=8080","--server.address=0.0.0.0"]
+# Use exec form for better signal handling
+ENTRYPOINT ["java", "-jar", "/app/app.jar", "--server.address=0.0.0.0"]

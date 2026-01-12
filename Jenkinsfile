@@ -1,7 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        COMPOSE_PROJECT_NAME = "cost-tracking"
+    }
+
     stages {
+
         stage('Checkout Code') {
             steps {
                 git branch: 'master',
@@ -9,26 +14,37 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Stop Existing Stack') {
             steps {
                 sh '''
-                docker build -t springboot-pipeline-app .
+                docker compose down || true
                 '''
             }
         }
 
-        stage('Run Container') {
+        stage('Build & Start Stack') {
             steps {
                 sh '''
-                docker stop springboot-pipeline-app || true
-                docker rm springboot-pipeline-app || true
-
-                docker run -d \
-                --name springboot-pipeline-app \
-                -p 9090:8080 \
-                springboot-pipeline-app
+                docker compose up -d --build
                 '''
             }
+        }
+
+        stage('Verify Containers') {
+            steps {
+                sh '''
+                docker compose ps
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Cost Tracking API is running via Docker Compose"
+        }
+        failure {
+            echo "❌ Deployment failed"
         }
     }
 }

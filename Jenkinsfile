@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_PROJECT_NAME = "Jenkins-test-api"
+        COMPOSE_PROJECT_NAME = "jenkins-test-api"
     }
 
     stages {

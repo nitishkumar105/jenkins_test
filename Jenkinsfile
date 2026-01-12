@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_PROJECT_NAME = "cost-tracking"
+        COMPOSE_PROJECT_NAME = "Jenkins-test-api"
     }
 
     stages {
@@ -41,10 +41,11 @@ pipeline {
 
     post {
         success {
-            echo "✅ Cost Tracking API is running via Docker Compose"
+            echo " jenkins-test-API is running via Docker Compose"
+            echo "Yes i can do it"
         }
         failure {
-            echo "❌ Deployment failed"
+            echo " Deployment failed"
         }
     }
 }

@@ -2,7 +2,10 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_PROJECT_NAME = "jenkins-test-api"
+         COMPOSE_PROJECT_NAME = "springboot-pipeline"
+         POSTGRES_DB = credentials('POSTGRES_DB')
+         POSTGRES_USER = credentials('POSTGRES_USER')
+         POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
     }
 
     stages {

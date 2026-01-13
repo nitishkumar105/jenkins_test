@@ -20,7 +20,7 @@ services:
 
   app:
     build: .
-    container_name: jenkins-test-api
+    container_name: springboot-pipeline-api
     ports:
       - "9090:8080"
     environment:

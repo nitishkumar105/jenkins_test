@@ -2,41 +2,75 @@ pipeline {
     agent any
 
     environment {
-         COMPOSE_PROJECT_NAME = "springboot-pipeline"
-         POSTGRES_DB = credentials('POSTGRES_DB')
-         POSTGRES_USER = credentials('POSTGRES_USER')
-         POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
+        POSTGRES_DB = credentials('POSTGRES_DB')
+        POSTGRES_USER = credentials('POSTGRES_USER')
+        POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git branch: 'master',
+                git branch: 'blue-green',
                     url: 'https://github.com/nitishkumar105/jenkins_test.git'
             }
         }
 
-        stage('Stop Existing Stack') {
+        stage('Detect Active Color') {
+            steps {
+                script {
+                    def active = sh(
+                        script: '''
+                        docker exec nginx \
+                        sh -c "grep proxy_pass /etc/nginx/conf.d/default.conf"
+                        ''',
+                        returnStdout: true
+                    ).trim()
+
+                    if (active.contains("app-blue")) {
+                        env.ACTIVE_COLOR = "blue"
+                        env.IDLE_COLOR = "green"
+                    } else {
+                        env.ACTIVE_COLOR = "green"
+                        env.IDLE_COLOR = "blue"
+                    }
+
+                    echo "ACTIVE = ${env.ACTIVE_COLOR}"
+                    echo "IDLE   = ${env.IDLE_COLOR}"
+                }
+            }
+        }
+
+        stage('Deploy Idle Color') {
             steps {
                 sh '''
-                docker compose down || true
+                docker compose up -d --build app-${IDLE_COLOR}
                 '''
             }
         }
 
-        stage('Build & Start Stack') {
+        stage('Wait for Health') {
             steps {
                 sh '''
-                docker compose up -d --build
+                echo "Waiting for app-${IDLE_COLOR} to be ready..."
+                sleep 15
                 '''
             }
         }
 
-        stage('Verify Containers') {
+        stage('Switch Traffic') {
             steps {
                 sh '''
-                docker compose ps
+                cp nginx/${IDLE_COLOR}.conf nginx/default.conf
+                docker exec nginx nginx -s reload
+                '''
+            }
+        }
+
+        stage('Stop Old Color') {
+            steps {
+                sh '''
+                docker compose stop app-${ACTIVE_COLOR}
                 '''
             }
         }
@@ -44,11 +78,11 @@ pipeline {
 
     post {
         success {
-            echo " jenkins-test-API is running via Docker Compose"
-            echo "Yes i can do it"
+            echo "Blue–Green deployment SUCCESS"
+            echo "yes i do it"
         }
         failure {
-            echo " Deployment failed"
+            echo "Deployment FAILED — rollback possible"
         }
     }
 }

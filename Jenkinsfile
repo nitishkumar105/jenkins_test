@@ -16,13 +16,21 @@ pipeline {
             }
         }
 
+        stage('Ensure Base Stack Running') {
+            steps {
+                sh '''
+                docker compose up -d postgres nginx
+                '''
+            }
+        }
+
         stage('Detect Active Color') {
             steps {
                 script {
                     def active = sh(
                         script: '''
                         docker exec nginx \
-                        sh -c "grep proxy_pass /etc/nginx/conf.d/default.conf"
+                        sh -c "grep proxy_pass /etc/nginx/conf.d/default.conf || true"
                         ''',
                         returnStdout: true
                     ).trim()
@@ -52,7 +60,7 @@ pipeline {
         stage('Wait for Health') {
             steps {
                 sh '''
-                echo "Waiting for app-${IDLE_COLOR} to be ready..."
+                echo "Waiting for app-${IDLE_COLOR}..."
                 sleep 15
                 '''
             }
@@ -78,11 +86,10 @@ pipeline {
 
     post {
         success {
-            echo "Blue–Green deployment SUCCESS"
-            echo "yes i do it"
+            echo " Blue–Green deployment SUCCESS Nitish "
         }
         failure {
-            echo "Deployment FAILED — rollback possible"
+            echo " Deployment FAILED — rollback possible"
         }
     }
 }

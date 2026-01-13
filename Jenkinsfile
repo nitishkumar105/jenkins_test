@@ -19,7 +19,7 @@ pipeline {
         stage('Ensure Base Stack Running') {
             steps {
                 sh '''
-                docker compose up -d postgres nginx
+                docker compose up -d --build
                 '''
             }
         }

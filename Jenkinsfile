@@ -19,7 +19,8 @@ pipeline {
         stage('Ensure Base Stack Running') {
             steps {
                 sh '''
-                docker compose up -d --build
+                docker compose down --remove-orphans || true
+                docker compose up -d --build postgres nginx
                 '''
             }
         }

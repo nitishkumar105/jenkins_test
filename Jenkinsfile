@@ -2,50 +2,63 @@ pipeline {
     agent any
 
     environment {
-         COMPOSE_PROJECT_NAME = "springboot-pipeline"
-         POSTGRES_DB = credentials('POSTGRES_DB')
-         POSTGRES_USER = credentials('POSTGRES_USER')
-         POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
+        DOCKER_IMAGE = "nitishk078/springboot-pipeline"
+        POSTGRES_DB = credentials('POSTGRES_DB')
+        POSTGRES_USER = credentials('POSTGRES_USER')
+        POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git branch: 'master',
+                git branch: 'ec2-deploy',
                     url: 'https://github.com/nitishkumar105/jenkins_test.git'
             }
         }
 
-        stage('Stop Existing Stack') {
+        stage('Build Docker Image') {
             steps {
                 sh '''
-                docker compose down || true
+                docker build -t $DOCKER_IMAGE:latest .
                 '''
             }
         }
 
-        stage('Build & Start Stack') {
+        stage('Push to Docker Hub') {
             steps {
-                sh '''
-                docker compose up -d --build
-                '''
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub-creds',
+                    usernameVariable: 'Nitishk078',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push $DOCKER_IMAGE:latest
+                    '''
+                }
             }
         }
 
-        stage('Verify Containers') {
+        stage('Deploy to EC2') {
             steps {
-                sh '''
-                docker compose ps
-                '''
+                sshagent(['springboot-docker-ec2']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no ubuntu@43.204.111.254 "
+                      cd ~/app &&
+                      docker compose pull &&
+                      docker compose down --remove-orphans &&
+                      docker compose up -d
+                    "
+                    '''
+                }
             }
         }
     }
 
     post {
         success {
-            echo " jenkins-test-API is running via Docker Compose"
-            echo "Yes i can do it"
+            echo " Deployed successfully to EC2 "
         }
         failure {
             echo " Deployment failed"

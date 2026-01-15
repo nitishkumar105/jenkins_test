@@ -44,7 +44,7 @@ pipeline {
             steps {
                 sshagent(['springboot-docker-ec2']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no ubuntu@43.204.111.254 "
+                    ssh -o StrictHostKeyChecking=no ubuntu@13.203.86.131 "
                       cd ~/app &&
                       docker compose pull &&
                       docker compose down --remove-orphans &&

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Project Deployment Status</title>
+    <style>
+        /* Same CSS as above */
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Project Deployment Dashboard</h1>
+    <p><strong>Deployed by:</strong> <span th:text="${deployedBy}"></span></p>
+    <p><strong>Deployment Method:</strong> <span th:text="${deploymentMethod}"></span></p>
+    <p><strong>Status:</strong> <span class="status" th:text="${status}"></span></p>
+    <p><strong>Last Deployment:</strong> <span th:text="${deploymentTime}"></span></p>
+    <p><strong>Application:</strong> Spring Boot REST API</p>
+    <p><strong>Features:</strong></p>
+    <ul>
+        <li>Continuous Integration/Continuous Deployment via Jenkins</li>
+        <li>Automated Testing Pipeline</li>
+        <li>Docker Containerization Support</li>
+        <li>Cloud Deployment Ready</li>
+        <li>Version Control: Git</li>
+        <li>Build Tool: Maven</li>
+    </ul>
+</div>
+</body>
+</html>
